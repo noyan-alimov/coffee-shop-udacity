@@ -18,11 +18,11 @@ export class AuthService {
   token: string;
   payload: any;
 
-  constructor() { }
+  constructor() {}
 
   build_login_link(callbackPath = '') {
     let link = 'https://';
-    link += this.url + '.auth0.com';
+    link += this.url;
     link += '/authorize?';
     link += 'audience=' + this.audience + '&';
     link += 'response_type=token&';
@@ -36,7 +36,7 @@ export class AuthService {
     // parse the fragment
     const fragment = window.location.hash.substr(1).split('&')[0].split('=');
     // check if the fragment includes the access token
-    if ( fragment[0] === 'access_token' ) {
+    if (fragment[0] === 'access_token') {
       // add the access token to the jwt
       this.token = fragment[1];
       // save jwts to localstore
@@ -75,6 +75,11 @@ export class AuthService {
   }
 
   can(permission: string) {
-    return this.payload && this.payload.permissions && this.payload.permissions.length && this.payload.permissions.indexOf(permission) >= 0;
+    return (
+      this.payload &&
+      this.payload.permissions &&
+      this.payload.permissions.length &&
+      this.payload.permissions.indexOf(permission) >= 0
+    );
   }
 }
