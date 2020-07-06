@@ -37,7 +37,7 @@ def get_drinks():
             'drinks': formatted_drinks
         })
     except:
-        abort(400)
+        abort(404)
 
 
 '''
@@ -59,7 +59,7 @@ def get_drinks_detail(payload):
             'drinks': formatted_drinks
         })
     except:
-        abort(422)
+        abort(404)
 
 
 '''
@@ -78,13 +78,12 @@ def create_drink(payload):
     title = body.get('title', None)
     recipe = body.get('recipe', None)
 
-    drink = Drink(title=title, recipe=json.dumps(recipe))
-    drink.insert()
-
     try:
+        drink = Drink(title=title, recipe=json.dumps(recipe))
+        drink.insert()
         return jsonify({
             'success': True,
-            'drinks': [drink.long]
+            'drinks': [drink.long()]
         })
     except:
         abort(422)
@@ -103,7 +102,7 @@ def create_drink(payload):
 '''
 @app.route('/drinks/<int:drink_id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def update_drink(drink_id):
+def update_drink(payload, drink_id):
     body = request.get_json()
     title = body.get('title', None)
     recipe = body.get('recipe', None)
@@ -125,10 +124,10 @@ def update_drink(drink_id):
     try:
         return jsonify({
             'success': True,
-            'drinks': [drink.long]
+            'drinks': [drink.long()]
         })
     except:
-        abort(400)
+        abort(422)
 
 
 '''
@@ -143,7 +142,7 @@ def update_drink(drink_id):
 '''
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 @requires_auth('patch:drinks')
-def delete_drink(drink_id):
+def delete_drink(payload, drink_id):
     if not drink_id:
         abort(404)
 
@@ -160,7 +159,7 @@ def delete_drink(drink_id):
             'deleted': drink_id
         })
     except:
-        abort(400)
+        abort(422)
 
 
 # Error Handling
@@ -185,42 +184,6 @@ def not_found(error):
     }), 404
 
 
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify({
-        'success': False,
-        'error': 400,
-        'message': 'bad request'
-    }), 400
-
-
-@app.errorhandler(405)
-def not_allowed(error):
-    return jsonify({
-        'success': False,
-        'error': 405,
-        'message': 'method not allowed'
-    }), 405
-
-
-@app.errorhandler(401)
-def not_authorized(error):
-    return jsonify({
-        'success': False,
-        'error': 401,
-        'message': 'not authorized'
-    }), 401
-
-
-@app.errorhandler(403)
-def forbidden(error):
-    return jsonify({
-        'success': False,
-        'error': 403,
-        'message': 'forbidden'
-    }), 403
-
-
 '''
 @TODO implement error handlers using the @app.errorhandler(error) decorator
     each error handler should return (with approprate messages):
@@ -242,3 +205,6 @@ def forbidden(error):
 @TODO implement error handler for AuthError
     error handler should conform to general task above 
 '''
+@app.errorhandler(AuthError)
+def auth_error(e):
+    return jsonify(e.error), e.status_code
